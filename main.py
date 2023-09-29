@@ -8,6 +8,7 @@ from models.preferences import CollegePreferences
 from services.chatgpt import get_college_ranking
 from fastapi.middleware.cors import CORSMiddleware
 import logging
+from models.subscription import Subscription
 
 
 
@@ -56,6 +57,14 @@ async def register(user: User):
     user.password = hashed_password
     await database.users.insert_one(user.dict())
     return {"message": "User registered successfully!"}
+
+@app.post("/subscribe/")
+async def subscribe(subscription: Subscription):
+    existing_subscription = await database.subscriptions.find_one({"email": subscription.email})
+    if existing_subscription:
+        raise HTTPException(status_code=400, detail="Email already subscribed")
+    await database.subscriptions.insert_one(subscription.dict())
+    return {"message": "Subscribed successfully!"}
 
 @app.post("/login/")
 async def login(user: User):
