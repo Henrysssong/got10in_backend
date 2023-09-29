@@ -1,9 +1,9 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 import bcrypt
 
 
 class User(BaseModel):
-    username: str
+    email: emailstr
     password: str
 
 def hash_password(password: str) -> str:

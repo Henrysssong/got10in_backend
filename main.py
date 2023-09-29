@@ -16,7 +16,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # You can specify the frontend domain here
+    allow_origins=["https://got10in.com/"],  # You can specify the frontend domain here
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -49,9 +49,9 @@ async def generate_ranking(token: str = Depends(decode_jwt_token)):
 
 @app.post("/register/")
 async def register(user: User):
-    existing_user = await database.users.find_one({"username": user.username})
+    existing_user = await database.users.find_one({"email": user.email})
     if existing_user:
-        raise HTTPException(status_code=400, detail="Username already exists")
+        raise HTTPException(status_code=400, detail="Email already exists")
     # Hash the password before storing (to be implemented)
     hashed_password = user.password  # Placeholder
     user.password = hashed_password
@@ -68,14 +68,14 @@ async def subscribe(subscription: Subscription):
 
 @app.post("/login/")
 async def login(user: User):
-    db_user = await database.users.find_one({"username": user.username})
+    db_user = await database.users.find_one({"email": user.email})
     if not db_user or not check_password(user.password, db_user["password"]):
         raise HTTPException(status_code=400, detail="Invalid credentials")
-    token = create_jwt_token({"username": user.username})
+    token = create_jwt_token({"email": user.email})
     return {"access_token": token}
 
 @app.post("/preferences/")
 async def set_preferences(preferences: CollegePreferences, token: str = Depends(decode_jwt_token)):
-    username = token["username"]
-    await database.users.update_one({"username": username}, {"$set": {"preferences": preferences.dict()}})
+    username = token["email"]
+    await database.users.update_one({"email": email}, {"$set": {"preferences": preferences.dict()}})
     return {"message": "Preferences updated successfully!"}
