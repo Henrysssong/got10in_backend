@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+httpx
+pyjwt
+bcrypt
+pymongo
+python-dotenv
+motor
