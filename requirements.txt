@@ -6,3 +6,5 @@ bcrypt
 pymongo
 python-dotenv
 motor
+email-validator
+```
