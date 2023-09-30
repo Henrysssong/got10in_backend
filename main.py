@@ -9,14 +9,13 @@ from services.chatgpt import get_college_ranking
 from fastapi.middleware.cors import CORSMiddleware
 import logging
 from models.subscription import Subscription
-
-
+from bcrypt import hashpw, gensalt, checkpw
 
 app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://got10in.com/"],  # You can specify the frontend domain here
+    allow_origins=["https://got10in.com/"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -39,11 +38,8 @@ async def generate_ranking(token: str = Depends(decode_jwt_token)):
     user = await database.users.find_one({"username": username})
     if not user or "preferences" not in user:
         raise HTTPException(status_code=400, detail="Preferences not set")
-
-    # Construct the prompt based on user preferences
     preferences = user["preferences"]
     prompt = f"Based on a student's preference for {preferences['field_of_study']} and {preferences['location_preference']}, rank the top colleges."
-    
     ranking = await get_college_ranking(prompt)
     return {"ranking": ranking}
 
@@ -52,9 +48,8 @@ async def register(user: User):
     existing_user = await database.users.find_one({"email": user.email})
     if existing_user:
         raise HTTPException(status_code=400, detail="Email already exists")
-    # Hash the password before storing (to be implemented)
-    hashed_password = user.password  # Placeholder
-    user.password = hashed_password
+    hashed_password = hashpw(user.password.encode('utf-8'), gensalt())
+    user.password = hashed_password.decode('utf-8')
     await database.users.insert_one(user.dict())
     return {"message": "User registered successfully!"}
 
@@ -69,7 +64,7 @@ async def subscribe(subscription: Subscription):
 @app.post("/login/")
 async def login(user: User):
     db_user = await database.users.find_one({"email": user.email})
-    if not db_user or not check_password(user.password, db_user["password"]):
+    if not db_user or not checkpw(user.password.encode('utf-8'), db_user["password"].encode('utf-8')):
         raise HTTPException(status_code=400, detail="Invalid credentials")
     token = create_jwt_token({"email": user.email})
     return {"access_token": token}
@@ -77,5 +72,5 @@ async def login(user: User):
 @app.post("/preferences/")
 async def set_preferences(preferences: CollegePreferences, token: str = Depends(decode_jwt_token)):
     username = token["email"]
-    await database.users.update_one({"email": email}, {"$set": {"preferences": preferences.dict()}})
+    await database.users.update_one({"email": username}, {"$set": {"preferences": preferences.dict()}})
     return {"message": "Preferences updated successfully!"}
