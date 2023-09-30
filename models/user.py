@@ -3,7 +3,7 @@ import bcrypt
 
 
 class User(BaseModel):
-    email: emailstr
+    email: EmailStr
     password: str
 
 def hash_password(password: str) -> str:
