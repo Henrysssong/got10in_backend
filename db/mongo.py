@@ -5,7 +5,7 @@ import asyncio
 MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017/got10in")
 FIXIE_URL = os.getenv("FIXIE_URL")
 
-client = motor.motor_asyncio.AsyncIOMotorClient(MONGO_URI, io_loop=asyncio.get_event_loop(), proxy=FIXIE_URL)
+client = motor.motor_asyncio.AsyncIOMotorClient(MONGO_URI, io_loop=asyncio.get_event_loop())
 database = client.got10in
 
 subscriptions = database["subscriptions"]
