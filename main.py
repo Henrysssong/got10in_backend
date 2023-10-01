@@ -13,9 +13,15 @@ from bcrypt import hashpw, gensalt, checkpw
 
 app = FastAPI()
 
+# Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://got10in.com/"],
+    allow_origins=[
+        "https://www.got10in.com",
+        "https://got10in-frontend-3ryxvqfxx-henrysssong.vercel.app",
+        "http://localhost:3000",
+        "https://got10in.com"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
